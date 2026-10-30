@@ -1,0 +1,6 @@
+include README.md LICENSE NOTICE VALIDATION.md
+recursive-include docs *.md *.py *.dot *.svg *.png
+recursive-include examples *.py *.md
+recursive-include benchmarks *.py *.json
+recursive-include tests *.py
+recursive-include .github *.yml

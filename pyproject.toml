@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=77.0.3", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "flash-ipa-jax"
+version = "0.2.0"
+description = "JAX invariant point attention, rigid geometry, and structure models with tiled and fused attention"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = ["jax>=0.7.1", "numpy>=1.26"]
+license = "MIT"
+
+[project.optional-dependencies]
+test = ["pytest>=8"]
+build = ["build", "wheel"]
+dev = ["pytest>=8", "black>=26.0", "build", "wheel"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["gpu: requires an explicitly selected real GPU backend"]
+

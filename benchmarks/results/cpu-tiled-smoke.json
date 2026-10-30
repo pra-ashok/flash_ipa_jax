@@ -1,0 +1,296 @@
+{
+  "jax": "0.12.0.1",
+  "python": "3.12.3",
+  "devices": [
+    "cpu:0"
+  ],
+  "options": {
+    "backend": "all",
+    "lengths": [
+      16,
+      64
+    ],
+    "batch": 1,
+    "heads": 4,
+    "hidden": 64,
+    "points": 8,
+    "value_points": 12,
+    "rank": 2,
+    "pair_channels": 8,
+    "dtype": "bfloat16",
+    "native_mode": "flash",
+    "chunk_size": 16,
+    "key_chunk_size": 16,
+    "mask": false,
+    "causal": false,
+    "strict": false,
+    "repeats": 3,
+    "output": "benchmarks/results/cpu-tiled-smoke.json"
+  },
+  "runs": [
+    {
+      "length": 16,
+      "decision": {
+        "requested": "native",
+        "selected": "native",
+        "reason": "portable JAX/XLA (flash)",
+        "padded_dim": null
+      },
+      "max_abs_error_vs_native": 0.0,
+      "input_dtype": "float32",
+      "executed_attention_dtype": "float32",
+      "forward": {
+        "compile_seconds": 0.5327187530929223,
+        "median_ms": 0.23953604977577925,
+        "min_ms": 0.22567599080502987,
+        "samples_ms": [
+          0.22567599080502987,
+          0.23953604977577925,
+          0.2585579641163349
+        ],
+        "compiler_memory_estimate_bytes": {
+          "argument_size_in_bytes": 73744,
+          "output_size_in_bytes": 27696,
+          "temp_size_in_bytes": 51280,
+          "alias_size_in_bytes": 0
+        }
+      },
+      "forward_and_backward": {
+        "compile_seconds": 0.7532876519253477,
+        "median_ms": 0.8197730639949441,
+        "min_ms": 0.4482830408960581,
+        "samples_ms": [
+          0.4482830408960581,
+          0.9284360567107797,
+          0.8197730639949441
+        ],
+        "compiler_memory_estimate_bytes": {
+          "argument_size_in_bytes": 73744,
+          "output_size_in_bytes": 73844,
+          "temp_size_in_bytes": 231120,
+          "alias_size_in_bytes": 0
+        }
+      }
+    },
+    {
+      "length": 16,
+      "decision": {
+        "requested": "flash_attn3",
+        "selected": "native",
+        "reason": "FA3 adapter requires a single NVIDIA Hopper GPU",
+        "padded_dim": null
+      },
+      "max_abs_error_vs_native": 0.0,
+      "input_dtype": "float32",
+      "executed_attention_dtype": "float32",
+      "forward": {
+        "compile_seconds": 0.5114298990229145,
+        "median_ms": 0.2148159546777606,
+        "min_ms": 0.1952860038727522,
+        "samples_ms": [
+          0.21681596990674734,
+          0.2148159546777606,
+          0.1952860038727522
+        ],
+        "compiler_memory_estimate_bytes": {
+          "argument_size_in_bytes": 73744,
+          "output_size_in_bytes": 27696,
+          "temp_size_in_bytes": 51280,
+          "alias_size_in_bytes": 0
+        }
+      },
+      "forward_and_backward": {
+        "compile_seconds": 0.747793716029264,
+        "median_ms": 2.3061149986460805,
+        "min_ms": 1.7333889845758677,
+        "samples_ms": [
+          2.3061149986460805,
+          1.7333889845758677,
+          5.1647459622472525
+        ],
+        "compiler_memory_estimate_bytes": {
+          "argument_size_in_bytes": 73744,
+          "output_size_in_bytes": 73844,
+          "temp_size_in_bytes": 231120,
+          "alias_size_in_bytes": 0
+        }
+      }
+    },
+    {
+      "length": 16,
+      "decision": {
+        "requested": "jax_aiter",
+        "selected": "native",
+        "reason": "AITER adapter targets the inspected gfx950/MI355X stack",
+        "padded_dim": null
+      },
+      "max_abs_error_vs_native": 0.0,
+      "input_dtype": "float32",
+      "executed_attention_dtype": "float32",
+      "forward": {
+        "compile_seconds": 0.5426897149300203,
+        "median_ms": 0.15794392675161362,
+        "min_ms": 0.15153398271650076,
+        "samples_ms": [
+          0.2053059870377183,
+          0.15153398271650076,
+          0.15794392675161362
+        ],
+        "compiler_memory_estimate_bytes": {
+          "argument_size_in_bytes": 73744,
+          "output_size_in_bytes": 27696,
+          "temp_size_in_bytes": 51280,
+          "alias_size_in_bytes": 0
+        }
+      },
+      "forward_and_backward": {
+        "compile_seconds": 0.7134823539527133,
+        "median_ms": 0.7285710889846087,
+        "min_ms": 0.6473589455708861,
+        "samples_ms": [
+          0.7285710889846087,
+          0.7870920235291123,
+          0.6473589455708861
+        ],
+        "compiler_memory_estimate_bytes": {
+          "argument_size_in_bytes": 73744,
+          "output_size_in_bytes": 73844,
+          "temp_size_in_bytes": 231120,
+          "alias_size_in_bytes": 0
+        }
+      }
+    },
+    {
+      "length": 64,
+      "decision": {
+        "requested": "native",
+        "selected": "native",
+        "reason": "portable JAX/XLA (flash)",
+        "padded_dim": null
+      },
+      "max_abs_error_vs_native": 5.960464477539063e-08,
+      "input_dtype": "float32",
+      "executed_attention_dtype": "float32",
+      "forward": {
+        "compile_seconds": 0.5655641129706055,
+        "median_ms": 1.9167941063642502,
+        "min_ms": 1.9058239413425326,
+        "samples_ms": [
+          1.9167941063642502,
+          1.9224450225010514,
+          1.9058239413425326
+        ],
+        "compiler_memory_estimate_bytes": {
+          "argument_size_in_bytes": 294928,
+          "output_size_in_bytes": 110688,
+          "temp_size_in_bytes": 125024,
+          "alias_size_in_bytes": 0
+        }
+      },
+      "forward_and_backward": {
+        "compile_seconds": 1.1332427659071982,
+        "median_ms": 10.208819061517715,
+        "min_ms": 8.42077808920294,
+        "samples_ms": [
+          8.42077808920294,
+          10.580889997072518,
+          10.208819061517715
+        ],
+        "compiler_memory_estimate_bytes": {
+          "argument_size_in_bytes": 294928,
+          "output_size_in_bytes": 295028,
+          "temp_size_in_bytes": 629056,
+          "alias_size_in_bytes": 0
+        }
+      }
+    },
+    {
+      "length": 64,
+      "decision": {
+        "requested": "flash_attn3",
+        "selected": "native",
+        "reason": "FA3 adapter requires a single NVIDIA Hopper GPU",
+        "padded_dim": null
+      },
+      "max_abs_error_vs_native": 5.960464477539063e-08,
+      "input_dtype": "float32",
+      "executed_attention_dtype": "float32",
+      "forward": {
+        "compile_seconds": 0.5868606669828296,
+        "median_ms": 1.971165998838842,
+        "min_ms": 1.92352500744164,
+        "samples_ms": [
+          1.971165998838842,
+          1.92352500744164,
+          1.9886059453710914
+        ],
+        "compiler_memory_estimate_bytes": {
+          "argument_size_in_bytes": 294928,
+          "output_size_in_bytes": 110688,
+          "temp_size_in_bytes": 125024,
+          "alias_size_in_bytes": 0
+        }
+      },
+      "forward_and_backward": {
+        "compile_seconds": 1.1218322929926217,
+        "median_ms": 6.8368230713531375,
+        "min_ms": 6.601647008210421,
+        "samples_ms": [
+          6.8368230713531375,
+          8.813060005195439,
+          6.601647008210421
+        ],
+        "compiler_memory_estimate_bytes": {
+          "argument_size_in_bytes": 294928,
+          "output_size_in_bytes": 295028,
+          "temp_size_in_bytes": 629056,
+          "alias_size_in_bytes": 0
+        }
+      }
+    },
+    {
+      "length": 64,
+      "decision": {
+        "requested": "jax_aiter",
+        "selected": "native",
+        "reason": "AITER adapter targets the inspected gfx950/MI355X stack",
+        "padded_dim": null
+      },
+      "max_abs_error_vs_native": 5.960464477539063e-08,
+      "input_dtype": "float32",
+      "executed_attention_dtype": "float32",
+      "forward": {
+        "compile_seconds": 0.5975500791100785,
+        "median_ms": 1.2774160131812096,
+        "min_ms": 1.274975948035717,
+        "samples_ms": [
+          1.274975948035717,
+          1.2846270110458136,
+          1.2774160131812096
+        ],
+        "compiler_memory_estimate_bytes": {
+          "argument_size_in_bytes": 294928,
+          "output_size_in_bytes": 110688,
+          "temp_size_in_bytes": 125024,
+          "alias_size_in_bytes": 0
+        }
+      },
+      "forward_and_backward": {
+        "compile_seconds": 1.131933139055036,
+        "median_ms": 7.645936100743711,
+        "min_ms": 7.533584022894502,
+        "samples_ms": [
+          7.645936100743711,
+          7.533584022894502,
+          7.963704993017018
+        ],
+        "compiler_memory_estimate_bytes": {
+          "argument_size_in_bytes": 294928,
+          "output_size_in_bytes": 295028,
+          "temp_size_in_bytes": 629056,
+          "alias_size_in_bytes": 0
+        }
+      }
+    }
+  ]
+}
