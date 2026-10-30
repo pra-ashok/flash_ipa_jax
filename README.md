@@ -16,7 +16,7 @@ FlashAttention kernels can evaluate them. Start with the explanation in
 
 ## Architecture at a glance
 
-![FlashIPA JAX architecture: single features, pair context and residue geometry pass through repeated structure-refinement blocks.](docs/figures/architecture.svg)
+![FlashIPA JAX architecture: single features, pair context and residue geometry pass through repeated structure-refinement blocks.](docs/figures/architecture.png)
 
 The model builds pair context, refines residue features with IPA and sequence
 attention, then updates residue orientations and positions over repeated blocks. The
