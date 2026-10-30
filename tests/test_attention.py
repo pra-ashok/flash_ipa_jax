@@ -141,7 +141,7 @@ def test_fully_masked_zero_outputs_and_gradients():
             *a,
             factors=f,
             mask=jnp.zeros((2, 5), bool),
-            backend=BackendConfig(chunk_size=2)
+            backend=BackendConfig(chunk_size=2),
         )
 
     out = jax.jit(run)(args, factors)

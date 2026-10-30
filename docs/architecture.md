@@ -206,7 +206,7 @@ names; actual fused execution still requires compatible inputs and hardware.
 | Complete model, block order and unit conversions | [`model.py`](../src/flash_ipa_jax/model.py) |
 | One IPA layer: projections and local/global point flow | [`layer.py`](../src/flash_ipa_jax/layer.py) |
 | Layer dimensions and named presets | [`config.py`](../src/flash_ipa_jax/config.py) |
-| Projected attention API and dispatch | [`attention.py`](../src/flash_ipa_jax/attention.py), [`backends.py`](../src/flash_ipa_jax/backends.py) |
+| Projected attention API and dispatch | [`attention.py`](../src/flash_ipa_jax/attention.py), [`backends/`](../src/flash_ipa_jax/backends/) |
 | Tiled/reference algorithms and fused QKV packing | [`kernels/`](../src/flash_ipa_jax/kernels/) |
 | Edge creation and learned dense-to-factor compression | [`edge_embedder.py`](../src/flash_ipa_jax/edge_embedder.py), [`factorizer.py`](../src/flash_ipa_jax/factorizer.py) |
 | Sequence attention, node/edge updates and structure refinement | [`structure/`](../src/flash_ipa_jax/structure/) |
@@ -219,23 +219,12 @@ so typical users do not need internal module paths. Source modules stay below
 300 lines by grouping kernels, geometry and structure components into focused
 subpackages.
 
-## Regenerate the figures
+## Diagram assets
 
-Edit the model's [`architecture.dot`](figures/architecture.dot) or the IPA
-layer's [`ipa_attention.dot`](figures/ipa_attention.dot). The DOT files contain
-the diagram labels, connections and layout. Install the system
-[Graphviz](https://graphviz.org/) package to provide the `neato` command, then
-run from the repository root:
-
-```bash
-python docs/figures/generate_architecture.py
-```
-
-The [`generator`](figures/generate_architecture.py) uses Python's standard
-library to render the DOT files as SVG and PNG beside the originals. It needs
-no project installation or Python plotting dependency. Commit regenerated
-assets when changing the DOT definitions. The SVGs embedded above remain
-readable without running any code.
+The model and IPA diagrams are checked in as SVG and PNG exports under
+[model SVG](figures/architecture.svg) and [IPA SVG](figures/ipa_attention.svg). The documentation uses these assets directly; building
+the site does not require Graphviz. Update each SVG and its PNG export together
+when changing a diagram.
 
 Continue with [concepts and papers](CONCEPTS.md), [usage](USAGE.md),
 [training](TRAINING.md), or the [complete documentation index](README.md).

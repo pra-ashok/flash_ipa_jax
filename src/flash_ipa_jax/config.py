@@ -1,4 +1,4 @@
-"""Model dimensions and named presets; backend settings live in backends.py."""
+"""Model dimensions and named presets; execution settings live in backends/."""
 
 from dataclasses import dataclass
 

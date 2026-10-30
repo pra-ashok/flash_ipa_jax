@@ -12,6 +12,14 @@ dependencies = ["jax>=0.7.1", "numpy>=1.26"]
 license = "MIT"
 
 [project.optional-dependencies]
+# Select one JAX device runtime for the host infrastructure. Fused GPU bindings
+# have stack-specific installation instructions in docs/installation.md.
+cpu = ["jax[cpu]>=0.7.1"]
+tpu = ["jax[tpu]>=0.7.1"]
+cuda12 = ["jax[cuda12]>=0.7.1"]
+cuda13 = ["jax[cuda13]>=0.7.1"]
+rocm7 = ["jax[rocm7-local]>=0.11.0"]
+docs = ["mkdocs==1.6.1"]
 test = ["pytest>=8"]
 build = ["build", "wheel"]
 dev = ["pytest>=8", "black>=26.0", "build", "wheel"]

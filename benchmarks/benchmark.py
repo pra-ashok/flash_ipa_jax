@@ -120,7 +120,7 @@ def main():
             options.rank,
             options.pair_channels,
             options.chunk_size,
-            options.key_chunk_size
+            options.key_chunk_size,
         )
         <= 0
     ):

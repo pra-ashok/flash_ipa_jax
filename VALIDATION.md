@@ -7,8 +7,8 @@ optimization checks, not GPU/TPU performance or biomolecular prediction quality.
 
 | Environment | Device | Result |
 | --- | --- | --- |
-| Python 3.12.3, JAX/jaxlib 0.12.0.1 | CPU | 109 passed, 8 skipped |
-| Python 3.12.3, JAX/jaxlib 0.7.1 | CPU | 109 passed, 8 skipped |
+| Python 3.12.3, JAX/jaxlib 0.12.0.1 | CPU | 121 passed, 8 skipped |
+| Python 3.12.3, JAX/jaxlib 0.7.1 | CPU | 121 passed, 8 skipped |
 
 The eight skipped cases require explicitly selected real NVIDIA or AMD kernels.
 Emulated adapter tests are separate from those hardware tests. The supplied
@@ -41,8 +41,8 @@ GitHub Actions matrix is configuration, not a claim of remote CI execution.
   returns, mixed-dtype reporting and API drift. Binary launch failures remain
   visible. Native execution does not load optional GPU packages.
 - A repository check enforces the 300-line limit across source, examples,
-  benchmarks and tests. There are 48 Python modules including the figure generator; the longest has
-  276 lines. The limit also covers Python files under `docs/`.
+  benchmarks, tests and documentation tools. There are 55 Python modules; the
+  longest has 276 lines.
 
 ## Cleanup and architecture checks
 
@@ -53,17 +53,38 @@ remains in `geometry/rigid.py`. Shared projection operations now live in
 verify weight-key splitting, independent uniform biases, custom and gating
 initializers, biasless projections, leading array axes and gradients.
 
-The [architecture guide](docs/architecture.md) includes full-model and IPA/backend
-diagrams. SVG and PNG outputs are rendered from the checked-in DOT definitions
-with the Python/Graphviz script. Both PNGs were visually checked; SVG XML and
-PNG signatures were validated. Local documentation/image links resolve, and the repository
-README indexes all guides, figures, examples, source groups and development tools.
-Source-archive checks include the guide and diagram assets; wheel checks confirm
-that removed wrappers are absent and the canonical geometry/normalization modules
-are present. The terminology revision also preserved the runtime syntax trees
-of all 47 numerical, example and test Python files after excluding docstrings.
-Only explanatory text changed; the figure generator and DOT definitions were
-redesigned separately.
+The [architecture guide](docs/architecture.md) includes model and IPA diagrams
+as checked-in SVG/PNG exports. The README indexes guides, figures, examples,
+source groups and development tools. Obsolete links to removed DOT/generator
+sources were removed while preserving the current diagram exports.
+
+## Adapter modules, installation and documentation site
+
+The three execution paths live in `backends/native.py`, `backends/flash_attn3.py`
+and `backends/jax_aiter.py`. Shared configuration and dispatch preserve the
+public API, visible fallback and strict execution. Adapter boundary tests also
+check imports in a fresh process: importing the package or executing native IPA
+does not load either optional GPU binding. Padding, FP16/BF16 casts, kernel
+arguments, output conventions and API drift are checked separately.
+
+[Installation](docs/installation.md) documents CPU testing, native JAX/XLA,
+TPU, CUDA and ROCm. Infrastructure extras select the appropriate JAX runtime;
+FA3 and AITER remain separately installed, stack-specific dependencies. GPU
+installation commands were checked against primary upstream documentation;
+no GPU runtime, driver or optional kernel was installed or validated here.
+
+The MkDocs site builds with `python -m mkdocs build --strict`. Its 15 HTML
+pages were checked under the `/flash_ipa_jax/` project path, including 692 local
+links, assets and anchors. Chromium browser checks covered desktop/mobile
+navigation, current-page highlighting, collapsible groups, keyboard Escape,
+search, dark-mode contrast and saved appearance preferences. No JavaScript
+errors were observed. These are local checks; no GitHub Pages deployment or
+remote workflow run was performed.
+
+Wheel checks confirm that all three adapters are packaged and the old
+`backends.py` file is absent. Source archives include installation instructions,
+MkDocs configuration, sidebar assets and the GitHub Pages workflow. A strict
+documentation build also succeeds from the extracted source archive.
 
 ## Executed example results
 

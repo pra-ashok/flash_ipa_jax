@@ -1,0 +1,73 @@
+site_name: FlashIPA in JAX
+site_description: Geometry-aware attention, readable JAX models, and accelerator adapters.
+site_url: !ENV [SITE_URL, "https://pra-ashok.github.io/flash_ipa_jax/"]
+repo_url: !ENV [REPOSITORY_URL, "https://github.com/pra-ashok/flash_ipa_jax"]
+repo_name: GitHub
+docs_dir: docs
+site_dir: site
+use_directory_urls: true
+
+theme:
+  name: readthedocs
+  custom_dir: docs/overrides
+  highlightjs: false
+  include_homepage_in_sidebar: true
+  collapse_navigation: true
+  navigation_depth: 3
+  # Keep the fixed sidebar's scroll independent of the article's scroll.
+  sticky_navigation: false
+  prev_next_buttons_location: bottom
+
+nav:
+  - Overview: index.md
+  - Get started:
+      - Reading guide: README.md
+      - Installation: installation.md
+      - Usage and shapes: USAGE.md
+      - Executable examples: examples.md
+  - Understand the model:
+      - IPA and FlashAttention: CONCEPTS.md
+      - Architecture: architecture.md
+      - Training and model sizes: TRAINING.md
+  - Accelerators:
+      - Backends, XLA and devices: BACKENDS.md
+      - Kernel integration: KERNEL_INTEGRATION.md
+  - Reference:
+      - Upstream coverage: UPSTREAM.md
+      - Papers and references: REFERENCES.md
+      - Validation record: validation.md
+      - Documentation site: DOCUMENTATION.md
+
+plugins:
+  - search
+
+hooks:
+  - docs/tools/site_links.py
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - fenced_code
+  - tables
+  - codehilite:
+      guess_lang: false
+  - toc:
+      permalink: true
+
+extra_css:
+  - stylesheets/extra.css
+
+extra_javascript:
+  - javascripts/theme.js
+
+exclude_docs: |
+  /overrides/
+  /tools/
+
+validation:
+  nav:
+    omitted_files: warn
+  links:
+    not_found: warn
+    unrecognized_links: warn
+    anchors: warn

@@ -1,5 +1,5 @@
-include README.md LICENSE NOTICE VALIDATION.md
-recursive-include docs *.md *.py *.dot *.svg *.png
+include README.md LICENSE NOTICE VALIDATION.md mkdocs.yml requirements-docs.txt
+recursive-include docs *.md *.py *.svg *.png *.css *.js *.html
 recursive-include examples *.py *.md
 recursive-include benchmarks *.py *.json
 recursive-include tests *.py

@@ -1,0 +1,2 @@
+# Building the documentation does not require JAX or accelerator packages.
+mkdocs==1.6.1

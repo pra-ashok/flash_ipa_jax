@@ -11,8 +11,7 @@ from .backends import BackendConfig, resolve_backend, enforce_decision, fused_at
 from .kernels.types import IPAOutput
 from .kernels.packing import pack_qkv
 from .kernels.validation import validate_inputs
-from .kernels.reference import reference_attention
-from .kernels.tiled import tiled_attention
+from .backends import native
 
 
 def backend_report(
@@ -139,10 +138,7 @@ def ipa_attention(
     )
     enforce_decision(backend, decision)
     if decision.selected == "native":
-        implementation = (
-            tiled_attention if backend.native_mode == "flash" else reference_attention
-        )
-        return implementation(
+        return native.attention(
             q,
             k,
             v,

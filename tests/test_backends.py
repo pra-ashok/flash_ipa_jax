@@ -11,12 +11,16 @@ from flash_ipa_jax import (
     backend_report,
 )
 import flash_ipa_jax.backends as backends
+from flash_ipa_jax.backends import common, flash_attn3, jax_aiter
+
 from helpers import inputs
+
+ADAPTERS = {"flash_attn3": flash_attn3, "jax_aiter": jax_aiter}
 
 
 @pytest.mark.parametrize("name", ["flash_attn3", "jax_aiter"])
 def test_cpu_fallback_is_correct_and_strict_raises(name, monkeypatch):
-    monkeypatch.setattr(backends, "_device_description", lambda q: "cpu")
+    monkeypatch.setattr(common, "device_description", lambda q: "cpu")
     args, factors = inputs(dtype=jnp.float32)
     with pytest.warns(BackendFallbackWarning, match="native"):
         out = ipa_attention(*args, factors=factors, backend=BackendConfig(name=name))
@@ -32,8 +36,8 @@ def test_cpu_fallback_is_correct_and_strict_raises(name, monkeypatch):
     [("flash_attn3", "gpu nvidia h100"), ("jax_aiter", "gpu amd mi355x gfx950")],
 )
 def test_eligibility_reasons(name, device, monkeypatch):
-    monkeypatch.setattr(backends, "_device_description", lambda q: device)
-    monkeypatch.setattr(backends, "_load_kernel", lambda name: object())
+    monkeypatch.setattr(common, "device_description", lambda q: device)
+    monkeypatch.setattr(ADAPTERS[name], "load_kernel", lambda: object())
     args, factors = inputs(dtype=jnp.float32)
     config = BackendConfig(name=name, kernel_dtype="float16")
 
@@ -48,10 +52,10 @@ def test_eligibility_reasons(name, device, monkeypatch):
     decision = backends.resolve_backend(config, args[0], 300, 30)
     assert decision.selected == "native" and "exceeds" in decision.reason
 
-    def missing(name):
+    def missing():
         raise ImportError("test missing kernel")
 
-    monkeypatch.setattr(backends, "_load_kernel", missing)
+    monkeypatch.setattr(ADAPTERS[name], "load_kernel", missing)
     assert "test missing kernel" in report().reason
 
 
@@ -60,7 +64,7 @@ def test_adapter_contract_with_emulated_kernel(name, monkeypatch):
     """Contract test only; this does not exercise a real GPU kernel."""
     args, factors = inputs(dtype=jnp.float32)
     device = "gpu h100" if name == "flash_attn3" else "gpu gfx950"
-    monkeypatch.setattr(backends, "_device_description", lambda q: device)
+    monkeypatch.setattr(common, "device_description", lambda q: device)
     calls = []
 
     def kernel(q, k, v, **kw):
@@ -83,7 +87,7 @@ def test_adapter_contract_with_emulated_kernel(name, monkeypatch):
         ).astype(q.dtype)
         return (out,) if name == "jax_aiter" else out
 
-    monkeypatch.setattr(backends, "_load_kernel", lambda name: kernel)
+    monkeypatch.setattr(ADAPTERS[name], "load_kernel", lambda: kernel)
     config = BackendConfig(name=name, kernel_dtype="float16", fallback="error")
     out = jax.jit(
         lambda *xs: ipa_attention(*xs, factors=factors, backend=config, causal=True)
@@ -95,34 +99,38 @@ def test_adapter_contract_with_emulated_kernel(name, monkeypatch):
 
 
 def test_native_never_imports_optional_packages(monkeypatch):
-    def fail(name):
+    def fail():
         raise AssertionError("unexpected optional import")
 
-    monkeypatch.setattr(backends, "_load_kernel", fail)
+    for adapter in ADAPTERS.values():
+        monkeypatch.setattr(adapter, "load_kernel", fail)
     args, _ = inputs()
     ipa_attention(*args)
 
 
-def test_api_drift_is_rejected(monkeypatch):
+@pytest.mark.parametrize("name", ["flash_attn3", "jax_aiter"])
+def test_api_drift_is_rejected(name, monkeypatch):
     from types import SimpleNamespace
 
     monkeypatch.setattr(
         importlib,
         "import_module",
-        lambda name: SimpleNamespace(flash_mha=lambda q, k, v: q),
+        lambda name: SimpleNamespace(
+            flash_mha=lambda q, k, v: q, flash_attn_func=lambda q, k, v: q
+        ),
     )
     with pytest.raises(ImportError, match="incompatible"):
-        backends._load_kernel("flash_attn3")
+        ADAPTERS[name].load_kernel()
 
 
 def test_kernel_runtime_failure_not_hidden(monkeypatch):
     args, _ = inputs(dtype=jnp.float32)
-    monkeypatch.setattr(backends, "_device_description", lambda q: "gpu h100")
+    monkeypatch.setattr(common, "device_description", lambda q: "gpu h100")
 
     def fail(*a, **kw):
         raise RuntimeError("FFI failure")
 
-    monkeypatch.setattr(backends, "_load_kernel", lambda name: fail)
+    monkeypatch.setattr(flash_attn3, "load_kernel", lambda: fail)
     with pytest.raises(RuntimeError, match="FFI failure"):
         ipa_attention(
             *args, backend=BackendConfig(name="flash_attn3", kernel_dtype="float16")
@@ -130,8 +138,8 @@ def test_kernel_runtime_failure_not_hidden(monkeypatch):
 
 
 def test_mixed_float64_inputs_require_native(monkeypatch):
-    monkeypatch.setattr(backends, "_device_description", lambda q: "gpu h100")
-    monkeypatch.setattr(backends, "_load_kernel", lambda name: object())
+    monkeypatch.setattr(common, "device_description", lambda q: "gpu h100")
+    monkeypatch.setattr(flash_attn3, "load_kernel", lambda: object())
     args, _ = inputs(dtype=jnp.float32)
     args = (*args[:-1], args[-1].astype(jnp.float64))
     with pytest.raises(BackendUnavailableError, match="float64"):
@@ -139,13 +147,13 @@ def test_mixed_float64_inputs_require_native(monkeypatch):
             *args,
             backend=BackendConfig(
                 name="flash_attn3", kernel_dtype="float16", fallback="error"
-            )
+            ),
         )
 
 
 def test_report_promotes_every_supplied_tensor(monkeypatch):
-    monkeypatch.setattr(backends, "_device_description", lambda q: "gpu h100")
-    monkeypatch.setattr(backends, "_load_kernel", lambda name: object())
+    monkeypatch.setattr(common, "device_description", lambda q: "gpu h100")
+    monkeypatch.setattr(flash_attn3, "load_kernel", lambda: object())
     args, factors = inputs(dtype=jnp.float32)
     config = BackendConfig(name="flash_attn3", kernel_dtype="float16")
     for mixed in (

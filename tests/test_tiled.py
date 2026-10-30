@@ -62,7 +62,7 @@ def test_tiled_all_input_gradients_match_dense(dense_pairs):
             mask=mask,
             causal=True,
             **options,
-            backend=BackendConfig(native_mode=mode, chunk_size=2, key_chunk_size=2)
+            backend=BackendConfig(native_mode=mode, chunk_size=2, key_chunk_size=2),
         )
         return sum(
             jnp.sum(value**2 + 0.13 * value)
@@ -116,5 +116,5 @@ def test_empty_dense_pair_channels_are_rejected_consistently():
             ipa_attention(
                 *args,
                 pair_values=jnp.zeros((2, 3, 3, 0)),
-                backend=BackendConfig(native_mode=mode)
+                backend=BackendConfig(native_mode=mode),
             )

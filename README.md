@@ -23,29 +23,36 @@ attention, then updates residue orientations and positions over repeated blocks.
 [architecture guide](docs/architecture.md) explains each stage, the attention
 backend choices, and where the implementation lives.
 
-## Install and try it
+## Installation
+
+Choose your machine's setup in [installation.md](docs/installation.md):
+CPU for correctness tests, native JAX/XLA on accelerators, NVIDIA CUDA with
+optional FA3, or AMD ROCm with optional AITER. Dependencies are selected for
+the infrastructure; installing the base package does not install GPU kernels.
+
+For a CPU smoke test:
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install -e '.[test]'
-python examples/minimal.py
-python examples/train.py --backend native --steps 30
-python -m pytest -q
+python -m pip install -e '.[cpu,test]'
+JAX_PLATFORMS=cpu python examples/minimal.py
+JAX_PLATFORMS=cpu python -m pytest -q -m 'not gpu'
 ```
 
 The package requires Python >= 3.11 and JAX >= 0.7.1. Choose a JAX release that
 supports your Python version and accelerator. Install the appropriate device
 build using the [official JAX guide](https://docs.jax.dev/en/latest/installation.html).
-Optional GPU kernel packages are installed separately; see [Backends](docs/BACKENDS.md).
+Optional GPU kernel packages are installed separately; see the
+[installation recipes](docs/installation.md) and [adapter contracts](docs/BACKENDS.md).
 
 ## Choose a backend
 
-| Backend name | How attention runs | Where to start |
-| --- | --- | --- |
-| `native` | Pure JAX, including query/key tiling with online softmax | CPU, TPU, supported GPUs; all pair modes and masks |
-| `flash_attn3` | Factorized geometric attention packed for the FA3 JAX binding | Supported NVIDIA Hopper GPU; FP16/BF16; expanded widths <= 128 |
-| `jax_aiter` | The same packing with AMD's JAX-AITER attention | Inspected gfx950/MI355X stack; FP16/BF16; expanded widths <= 256 |
+| Backend name | Adapter module | How attention runs | Infrastructure |
+| --- | --- | --- | --- |
+| `native` | [native.py](src/flash_ipa_jax/backends/native.py) | JAX/XLA query/key tiling with online softmax | CPU tests; supported TPU/GPU training; all pair modes and masks |
+| `flash_attn3` | [flash_attn3.py](src/flash_ipa_jax/backends/flash_attn3.py) | Packed geometric attention through the FA3 binding | NVIDIA Hopper; FP16/BF16; expanded widths <= 128 |
+| `jax_aiter` | [jax_aiter.py](src/flash_ipa_jax/backends/jax_aiter.py) | Packed geometric attention through JAX-AITER | gfx950/MI355X ROCm stack; FP16/BF16; expanded widths <= 256 |
 
 All three paths preserve scalar, geometric and supported pair contributions.
 The native FlashAttention algorithm is portable JAX code; performance depends on
@@ -93,6 +100,7 @@ The [documentation index](docs/README.md) gives a suggested reading order.
 
 | Goal | Guide |
 | --- | --- |
+| Install for CPU testing, XLA/TPU, CUDA or ROCm | [Installation](docs/installation.md) |
 | Understand IPA, FlashAttention, applications and JAX | [Concepts](docs/CONCEPTS.md) |
 | Follow the model and attention data flow; locate the source | [Architecture and generated figures](docs/architecture.md) |
 | Use layers, pair features, masks or the full structure model | [Usage and shapes](docs/USAGE.md) |
@@ -102,6 +110,7 @@ The [documentation index](docs/README.md) gives a suggested reading order.
 | Compare this port with upstream files and behavior | [Upstream coverage](docs/UPSTREAM.md) |
 | Find papers and source references | [References](docs/REFERENCES.md) |
 | See executed checks and remaining hardware validation | [Validation record](VALIDATION.md) |
+| Preview the sidebar and publish docs on GitHub Pages | [Documentation site](docs/DOCUMENTATION.md) |
 
 ## Examples and development
 
@@ -115,19 +124,20 @@ The [documentation index](docs/README.md) gives a suggested reading order.
 | [Benchmark results](benchmarks/results/) | Recorded CPU smoke measurements |
 | [Tests](tests/) | Numerical references, geometry, model, backend and training checks |
 | [CPU workflow](.github/workflows/tests.yml) | Automated test and example commands |
+| [GitHub Pages workflow](.github/workflows/docs.yml) | Strict docs build, artifact upload and Pages deployment |
+| [Site configuration](mkdocs.yml) | Grouped sidebar, search, theme and page index |
 | [Model architecture SVG](docs/figures/architecture.svg) / [PNG](docs/figures/architecture.png) | Full model diagram for viewing or reuse |
 | [IPA architecture SVG](docs/figures/ipa_attention.svg) / [PNG](docs/figures/ipa_attention.png) | Attention detail and backend selection |
-| [Model DOT source](docs/figures/architecture.dot) / [IPA DOT source](docs/figures/ipa_attention.dot) | Editable diagram definitions and layout |
-| [Figure generator](docs/figures/generate_architecture.py) | Render SVG/PNG with Python and the Graphviz `neato` command |
 
 ```bash
 # Tests and code formatting; the dev extra supplies Black.
 python -m pip install -e '.[dev]'
 python -m pytest -q
-python -m black --check src tests examples benchmarks docs/figures
+python -m black --check src tests examples benchmarks docs/tools
 
-# Optional: regenerate the checked-in diagrams after installing Graphviz.
-python docs/figures/generate_architecture.py
+# Preview the documentation sidebar without installing JAX.
+python -m pip install -r requirements-docs.txt
+python -m mkdocs serve
 ```
 
 ## Source index
@@ -136,7 +146,7 @@ python docs/figures/generate_architecture.py
 | --- | --- |
 | Public imports | [Package API](src/flash_ipa_jax/__init__.py) |
 | Model dimensions and IPA layer | [Configuration](src/flash_ipa_jax/config.py), [layer](src/flash_ipa_jax/layer.py) |
-| Projected attention and execution selection | [Attention API](src/flash_ipa_jax/attention.py), [backends](src/flash_ipa_jax/backends.py), [kernels](src/flash_ipa_jax/kernels/) |
+| Projected attention and execution selection | [Attention API](src/flash_ipa_jax/attention.py), [three adapters and dispatch](src/flash_ipa_jax/backends/), [kernels](src/flash_ipa_jax/kernels/) |
 | Complete model and update blocks | [Model](src/flash_ipa_jax/model.py), [structure blocks](src/flash_ipa_jax/structure/) |
 | Pair context | [Edge embedder](src/flash_ipa_jax/edge_embedder.py), [factorizer](src/flash_ipa_jax/factorizer.py) |
 | Coordinate systems and rotations | [Geometry](src/flash_ipa_jax/geometry/) |
